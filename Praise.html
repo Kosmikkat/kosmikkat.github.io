@@ -497,6 +497,7 @@ var myGameArea = {
       if (progress.includes(responses[2])){
         this.blank();
         unfreezeTime = Date.now()+coolOffTime;
+        rawData.push(", Praise, 6, Null, , "+currentTime.toLocaleTimeString('en-US'));
       }
       this.reset();
       return;
