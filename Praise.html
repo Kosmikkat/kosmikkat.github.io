@@ -54,10 +54,10 @@ currentPraise = [0,0];
 //Progressive Ratio numbers:
 
 progress=[1,3,7,15,31,63,127,255,511];
-responses=[0,0];
+responses=[0,0,0];
 
 //this is for all the things. 0 and 1 are for color blind test. 2 is for task 1, 3 is for language 1 with reward, 4 is for language 2 with reward, 5 is for lang 1 no reward, 6 lang 2 no reward.
-boxLanguageColors=["rgb(160,240,160)","rgb(240,160,40)","rgb(86,180,233)","rgb(160,240,160)","rgb(240,160,40)","rgb(160,240,160)","rgb(240,160,40)"];
+boxLanguageColors=["rgb(160,240,160)","rgb(240,160,40)","rgb(0,0,0)","rgb(160,240,160)","rgb(240,160,40)","rgb(160,240,160)","rgb(240,160,40)"];
 //other colors: "rgb(0,158,115)", "rgb(240,160,40)"
 
 
@@ -145,13 +145,13 @@ function runMode(mode){
   offsety=myGameArea.canvas.getBoundingClientRect().top;
 //reset the data
   currentPraise = [0,0];
-  responses=[0,0];
+  responses=[0,0,0];
   rawData=[];
 //set the starting time
   gameTime=Date.now();
   currentTime = new Date();
-  rawData.push(", userID, "+user+", , "+currentTime.toLocaleTimeString('en-US'));
-  rawData.push(", start language, "+gameMode+", , "+currentTime.toLocaleTimeString('en-US'));
+  rawData.push(", userID, "+user+", , , "+currentTime.toLocaleTimeString('en-US'));
+  rawData.push(", task number, "+gameMode+", , , "+currentTime.toLocaleTimeString('en-US'));
 }
 
 
@@ -342,7 +342,7 @@ var myGameArea = {
     outbox.cols="40";
     rawrawData="";
     currentTime = new Date()
-    l=rawData.push(", end, "+type+", , "+currentTime.toLocaleTimeString('en-US'));
+    l=rawData.push(", end, "+type+", , , "+currentTime.toLocaleTimeString('en-US'));
     for (i=0; i<l; ++i){
       rawrawData=rawrawData+rawData[i]+'\n';
     }
@@ -435,25 +435,25 @@ var myGameArea = {
 //if box in corner:
       if (this.click ==0 && this.wasClicked==1 && this.wasControlled ==1 && pieces[i].x+pieces[i].width>this.canvas.width-zonex && pieces[i].y<zoney){//encoding top right corner
         rawData.push(pickupString);
-        rawData.push("1, Top Right, "+i+", "+colorList[i]+", "+this.boxLanguages[1]+", "+currentTime.toLocaleTimeString('en-US'));
+        rawData.push("1, Top Right, "+i+", "+colorList[i]+", "+(this.boxLanguages[1]+1)+", "+currentTime.toLocaleTimeString('en-US'));
         this.score(this.boxLanguages[1]);
         return(0);
       }
       if (this.click ==0 && this.wasClicked==1 && this.wasControlled ==1 && pieces[i].x+pieces[i].width>this.canvas.width-zonex && pieces[i].y+pieces[i].height>this.canvas.height-zoney){//encoding bottom right corner
         rawData.push(pickupString);
-        rawData.push("3, Bottom Right, "+i+", "+colorList[i]+", "+this.boxLanguages[3]+", "+currentTime.toLocaleTimeString('en-US'));
+        rawData.push("3, Bottom Right, "+i+", "+colorList[i]+", "+(this.boxLanguages[3]+1)+", "+currentTime.toLocaleTimeString('en-US'));
         this.score(this.boxLanguages[3]);
         return(0);
       }
       if (this.click ==0 && this.wasClicked==1 && this.wasControlled ==1 && pieces[i].x<zonex && pieces[i].y<zoney){//encoding top left corner
         rawData.push(pickupString);
-        rawData.push("0, Top Left, "+i+", "+colorList[i]+", "+this.boxLanguages[0]+", "+currentTime.toLocaleTimeString('en-US'));
+        rawData.push("0, Top Left, "+i+", "+colorList[i]+", "+(this.boxLanguages[0]+1)+", "+currentTime.toLocaleTimeString('en-US'));
         this.score(this.boxLanguages[0]);
         return(0);
       }
       if (this.click ==0 && this.wasClicked==1 && this.wasControlled ==1 && pieces[i].x<zonex && pieces[i].y+pieces[i].height>this.canvas.height-zoney){//encoding bottom left corner
         rawData.push(pickupString);
-        rawData.push("2, Bottom Left, "+i+", "+colorList[i]+", "+this.boxLanguages[2]+", "+currentTime.toLocaleTimeString('en-US'));
+        rawData.push("2, Bottom Left, "+i+", "+colorList[i]+", "+(this.boxLanguages[2]+1)+", "+currentTime.toLocaleTimeString('en-US'));
         this.score(this.boxLanguages[2]);
         return(0);
       }
@@ -492,9 +492,18 @@ var myGameArea = {
   score : function(boxNumber) {
     if ([3,5].includes(boxNumber)) language=0; 
     if ([4,6].includes(boxNumber)) language=1;
+    if (boxNumber==2) {
+      responses[2]+=1;
+      if (progress.includes(responses[2])){
+        this.blank();
+        unfreezeTime = Date.now()+coolOffTime;
+      }
+      this.reset();
+      return;
+    }
     //console.log(responses);
 
-    if ([2,5,6].includes(boxNumber)){
+    if ([5,6].includes(boxNumber)){
       this.reset();
       return;
     }
@@ -514,7 +523,7 @@ var myGameArea = {
     responses[language]+=1;
     if (progress.includes(responses[language])){
       unfreezeTime = Date.now()+coolOffTime;
-      rawData.push(", Praise, "+praiseMap[user][language][phraseNumber[language][currentPraise[language]]][1]+", "+language+", "+currentTime.toLocaleTimeString('en-US'));
+      rawData.push(", Praise, "+(language+4)+", "+praiseMap[user][language][phraseNumber[language][currentPraise[language]]][1]+", , "+currentTime.toLocaleTimeString('en-US'));
       this.blank();
       var audio = new Audio(praiseMap[user][language][phraseNumber[language][currentPraise[language]]][0]);
       audio.play();
