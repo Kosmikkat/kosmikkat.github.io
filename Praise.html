@@ -1,7 +1,8 @@
 <html>
 <body>
 
-To get started, enter your unique ID number, and press the start button. You can quit at any time with "Esc" or "q".
+To get started, enter your unique ID number, and press the start button. You can quit at any time with "Esc", "q", or the Quit button. 
+If you need to take a break, you can click the "Pause" button.
 <br>
 After the game, the box that appears has the results, and it's already copied to the clipboard.
 <br>
@@ -29,7 +30,12 @@ numofpieces=4;
 absoluteX = 480;
 absoluteY = 270;
 //how long to play?
-timeoutInterval=60*1000;
+timeoutInterval=60*1000;//Time after last interaction
+gameDuration=5*60*1000;//total game time
+var timePaused=0;//amount of time spent paused.
+var isPaused=0;//1 when paused
+var pauseDuration=0;//tracks how long the game is paused.
+var pauseSinceInteraction=0;//tracks how long has been spent paused since the last move.
 gameTime=null;
 gameMode=0;
 testPattern=[['a','b','a','b'],['b','a','b','a']];
@@ -132,10 +138,14 @@ function runMode(mode){
   quitButton.id="quit";
   quitButton.onclick= function(){quit()};
   quitButton.innerHTML= "Quit";
+  pauseButton=document.createElement("button");
+  pauseButton.id="pause";
+  pauseButton.onclick= function(){pause()};
+  pauseButton.innerHTML= "Pause/Unpause";
   gameCanvas=document.createElement("canvas");
   gameCanvas.id="zone";
   linebreak = document.createElement("br");
-  activeElements.append(quitButton,linebreak,gameCanvas);
+  activeElements.append(quitButton,pauseButton,linebreak,gameCanvas);
   document.getElementById("root").appendChild(activeElements);
 //start the game
   gameMode=mode;
@@ -160,6 +170,9 @@ function quit(){
 }
 
 
+function pause(){
+  myGameArea.pause();
+}
 
 function colorTest(){
 //remove everything else
@@ -382,6 +395,8 @@ var myGameArea = {
     for (let i=0; i<numofpieces; i++){
       pieces[i].draw();
     }
+    timePaused=0;
+    isPaused=0;
     this.interval = setInterval(updateGameArea, 20);
     this.lastInteraction = Date.now();
     if ([1,2,3].includes(mode)) this.boxLanguages = [mode+1,mode+1,mode+1,mode+1];
@@ -399,9 +414,20 @@ var myGameArea = {
 
 
   update : function() {
+//check if we're paused
+    if (isPaused==1){
+      this.blank();
+      pauseSinceInteraction=pauseSinceInteraction+20;
+      pauseDuration=pauseDuration+20;
+      return(0);
+    }
 //if we're out of time, end the mode.
-    if (Date.now()-this.lastInteraction>timeoutInterval){
-      this.endMode("timeout");
+    if (Date.now()-this.lastInteraction-pauseSinceInteraction>timeoutInterval){
+      this.endMode("no activity");
+      return(0);
+    }
+    if (Date.now()-gameTime-pauseDuration>gameDuration){
+      this.endMode("five minutes up");
       return(0);
     }
 //if we've recently scored, do nothing
@@ -426,6 +452,7 @@ var myGameArea = {
 //move the controlled thing
     if (this.controlling == 1){
       this.lastInteraction = Date.now();
+      pauseSinceInteraction=0;
       pieces[this.controlledIndex].x += this.mousex - this.previousMousex;
       pieces[this.controlledIndex].y += this.mousey - this.previousMousey;
     }
@@ -546,6 +573,17 @@ var myGameArea = {
     this.context.fillStyle = "rgb(0,0,0)";
   },
 
+  pause : function() {
+    currentTime = new Date();
+    if (isPaused==0){
+      rawData.push(", paused, , , , "+currentTime.toLocaleTimeString('en-US'));
+      isPaused=1;
+    }
+    else{
+      rawData.push(", unpaused, , , , "+currentTime.toLocaleTimeString('en-US'));
+      isPaused=0;
+    }
+  },
 
   reset : function() {
     for (let i=0; i<numofpieces; i++){
