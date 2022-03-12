@@ -258,6 +258,7 @@ function checkColors(){
         rawData.push("3, Bottom Right, "+i+", "+colorList[i]+", "+currentTime.toLocaleTimeString('en-US'));
         if (myGameArea.controlledIndex==currentColor){
           currentColor+=1
+          if (currentColor==2) targetColor=1;
           choice=Math.floor(6*Math.random());
           targetColor=Math.floor(2*Math.random());
           myGameArea.boxLanguages = boxDict[choice].slice();
