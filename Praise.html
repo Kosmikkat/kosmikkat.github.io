@@ -32,7 +32,6 @@ absoluteY = 270;
 //how long to play?
 timeoutInterval=60*1000;//Time after last interaction
 gameDuration=5*60*1000;//total game time
-var timePaused=0;//amount of time spent paused.
 var isPaused=0;//1 when paused
 var pauseDuration=0;//tracks how long the game is paused.
 var pauseSinceInteraction=0;//tracks how long has been spent paused since the last move.
@@ -409,7 +408,7 @@ var myGameArea = {
     for (let i=0; i<numofpieces; i++){
       pieces[i].draw();
     }
-    timePaused=0;
+    pauseDuration=0;
     isPaused=0;
     this.interval = setInterval(updateGameArea, 20);
     this.lastInteraction = Date.now();
